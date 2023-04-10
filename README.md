@@ -1,9 +1,9 @@
 # :package_description
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/oneplusone/cmwquery.svg?style=flat-square)](https://packagist.org/packages/oneplusone/cmwquery)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/oneplusone/cmwquery/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/oneplusone/cmwquery/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/oneplusone/cmwquery/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/oneplusone/cmwquery/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/oneplusone/cmwquery.svg?style=flat-square)](https://packagist.org/packages/oneplusone/cmwquery)
 <!--delete-->
 ---
 This repo can be used to scaffold a Laravel package. Follow these steps to get started:
@@ -29,20 +29,20 @@ We highly appreciate you sending us a postcard from your hometown, mentioning wh
 You can install the package via composer:
 
 ```bash
-composer require :vendor_slug/:package_slug
+composer require oneplusone/cmwquery
 ```
 
 You can publish and run the migrations with:
 
-```bash
-php artisan vendor:publish --tag=":package_slug-migrations"
+<!-- ```bash
+php artisan vendor:publish --tag="cmw-query-migrations"
 php artisan migrate
-```
+``` -->
 
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-config"
+php artisan vendor:publish --tag="cmwquery-config"
 ```
 
 This is the contents of the published config file:
@@ -52,17 +52,21 @@ return [
 ];
 ```
 
-Optionally, you can publish the views using
+<!-- Optionally, you can publish the views using
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-views"
-```
+php artisan vendor:publish --tag="cmwquery-views"
+``` -->
 
 ## Usage
 
+To use request automticaly for some Model insert on top of Model file 
 ```php
-$variable = new VendorName\Skeleton();
-echo $variable->echoPhrase('Hello, VendorName!');
+use OnePlusOne\CMWQuery\Traits\SendCMWRequest;
+```
+Indert in model body 
+```php
+use SendCMWRequest;
 ```
 
 ## Testing
@@ -85,7 +89,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [:author_name](https://github.com/:author_username)
+- [GalinaBublik](https://github.com/GalinaBublik)
 - [All Contributors](../../contributors)
 
 ## License
