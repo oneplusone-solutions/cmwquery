@@ -3,8 +3,8 @@
 namespace OnePlusOne\CMWQuery\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Orchestra\Testbench\TestCase as Orchestra;
 use OnePlusOne\CMWQuery\CMWServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {

@@ -2,14 +2,13 @@
 
 namespace OnePlusOne\CMWQuery;
 
-use Filament\PluginServiceProvider;
 use Filament\Events\ServingFilament;
+use Filament\PluginServiceProvider;
 use OnePlusOne\CMWQuery\Widgets\CMWWidget;
 use Spatie\LaravelPackageTools\Package;
 
-class CMWServiceProvider  extends PluginServiceProvider
+class CMWServiceProvider extends PluginServiceProvider
 {
-
     protected array $widgets = [
         CMWWidget::class,
     ];
@@ -19,8 +18,7 @@ class CMWServiceProvider  extends PluginServiceProvider
         $package
             ->name('cmwquery')
             ->hasConfigFile()
-            ->hasTranslations()
-        ;
+            ->hasTranslations();
     }
 //    /**
 //     * Bootstrap any package services.
