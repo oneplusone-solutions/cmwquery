@@ -72,7 +72,7 @@
                 "OnePlusOne\\CMWQuery\\CMWServiceProvider"
             ],
             "aliases": {
-                "CMWQuery": "OnePlusOne\\CMWQuery\\CMWServiceProvider"
+                "CMWQuery": "OnePlusOne\\CMWQuery\\CMWQuery"
             }
         }
     },
