@@ -2,8 +2,7 @@
 
 namespace OnePlusOne\CMWQuery\Widgets;
 
-use App/Filament/Widgets/StatsOverviewWidget;
-
+use App\Filament\Widgets\StatsOverviewWidget;
 use Flowframe\Trend\Trend;
 use Illuminate\Support\Carbon;
 use Flowframe\Trend\TrendValue;

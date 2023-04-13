@@ -1,10 +1,12 @@
 {
-    "name": "oneplusone-solutions/cmwquery",
-    "description": ":package_description",
+    "name": "oneplusone/cmwquery",
+    "description": "Sent easy request to your comindwork",
     "keywords": [
-        ":vendor_name",
+        "oneplusone",
         "laravel",
-        ":package_slug"
+        "filament",
+        "comindwork",
+        "API request"
     ],
     "homepage": "https://github.com/oneplusone-solutions/cmwquery",
     "license": "MIT",
@@ -23,10 +25,9 @@
     "require": {
         "php": "^8.0|^8.1",
         "filament/filament": "^2.13",
-        "spatie/laravel-package-tools": "^1.14.0",
+        "spatie/laravel-package-tools": "^1.12.0",
         "leandrocfe/filament-apex-charts": "^1.0",
-        "flowframe/laravel-trend": "^0.1.5",
-        "illuminate/contracts": "^10.0"
+        "flowframe/laravel-trend": "^0.1.5"
     },
     "require-dev": {
         "laravel/pint": "^1.0",
@@ -43,7 +44,7 @@
     },
     "autoload": {
         "psr-4": {
-            "OnePlusOne\\CMWQuery\\": "src/",
+            "OnePlusOne\\CMWQuery\\": "src/"
         }
     },
     "autoload-dev": {
