@@ -1,4 +1,5 @@
 <?php
+
 namespace OnePlusOne\CMWQuery\Traits;
 
 use GuzzleHttp\Client;
@@ -12,11 +13,12 @@ trait SendCMWRequest
         $this->beforeBooted();
 
         $this->makeRequest($data);
-        die('1111111111111111');
+        exit('1111111111111111');
 
         $this->afterBooted();
 
     }
+
     protected function beforeBooted(): void
     {
     }
@@ -35,33 +37,33 @@ trait SendCMWRequest
 //    }
 
     /**
-     * @param array $inputData
-     * @return string
+     * @param  array  $inputData
+     *
      * @throws \Exception
      */
-    public function makeRequest(array $data):string
+    public function makeRequest(array $data): string
     {
         $client = new Client();
         $files_key = config('cmw-config.fields.files');
         //if request have files - try to upload before create deals
         // after uploaded files work with them flowIdentifier and titles
-        if( isset($data[$files_key]) ){
+        if (isset($data[$files_key])) {
             $data[$files_key] = $this->uploadFiles($data[$files_key]);
         }
 
         $inputData = $this->prepareData($data);
 //        SendCMWQuery::dispatch($inputData);
 
-        $api_url = "https://1pls1.comindwork.com/api/apialpha.ashx/tickets/multi";
-        $auth_code = "CMW_AUTH_CODE 2bmN1gdVUFj3a5SmRU7Ly9PxNBdjkpIEvrahP77fByVh3b9qYi"; // add var to .env
+        $api_url = 'https://1pls1.comindwork.com/api/apialpha.ashx/tickets/multi';
+        $auth_code = 'CMW_AUTH_CODE 2bmN1gdVUFj3a5SmRU7Ly9PxNBdjkpIEvrahP77fByVh3b9qYi'; // add var to .env
 
         try {
             $response = $client->post($api_url, [
                 'headers' => [
                     'Content-Type' => 'application/json; charset=utf-8',
-                    'Authorization' => $auth_code
+                    'Authorization' => $auth_code,
                 ],
-                'json' => [$inputData]
+                'json' => [$inputData],
             ]);
 
             if ($response->getStatusCode() !== 200) {
@@ -70,29 +72,24 @@ trait SendCMWRequest
 
             return $response->getBody()->getContents();
         } catch (GuzzleException $e) {
-            throw new \Exception('Failed to send data to third-party API: ' . $e->getMessage());
+            throw new \Exception('Failed to send data to third-party API: '.$e->getMessage());
         }
 
-
     }
-    /**
-     * @param array $files
-     * @return array
-     */
-    public function uploadFiles(array $files):array
+
+    public function uploadFiles(array $files): array
     {
 
-
-        $auth_code = "CMW_AUTH_CODE 2bmN1gdVUFj3a5SmRU7Ly9PxNBdjkpIEvrahP77fByVh3b9qYi"; // add var to .env
+        $auth_code = 'CMW_AUTH_CODE 2bmN1gdVUFj3a5SmRU7Ly9PxNBdjkpIEvrahP77fByVh3b9qYi'; // add var to .env
         $project_id = '7d5d6487-dc13-4016-a84a-b92ff1c9bdfb';
-        $api_url = "https://1pls1.comindwork.com/api/upload.ashx";
+        $api_url = 'https://1pls1.comindwork.com/api/upload.ashx';
         $ids = [];
 //        echo '<pre style="display:none;">';
 //        var_dump($files);
 //        echo '</pre>';
 
         // prepare data for each file
-        foreach ($files as $file){
+        foreach ($files as $file) {
 
             $title = $file->getClientOriginalName();
             $id = Str::uuid().'-'.$file->getSize().'-'.str_replace([' ', '.'], '_', $title).'-'.microtime();
@@ -100,26 +97,26 @@ trait SendCMWRequest
             $mime = $file->getmimeType();
 
             $request = [
-                'flowChunkNumber'=> 1,
-                'flowChunkSize'=> 1048576,
-                'flowCurrentChunkSize'=> $file->getSize(),
-                'flowTotalSize'=> $file->getSize(),
-                'flowIdentifier'=> $id,
-                'flowFilename'=> $title,
-                'flowRelativePath'=> $title,
-                'flowTotalChunks'=> 1,
+                'flowChunkNumber' => 1,
+                'flowChunkSize' => 1048576,
+                'flowCurrentChunkSize' => $file->getSize(),
+                'flowTotalSize' => $file->getSize(),
+                'flowIdentifier' => $id,
+                'flowFilename' => $title,
+                'flowRelativePath' => $title,
+                'flowTotalChunks' => 1,
                 'file' => file_get_contents($file->getRealPath()),
-//                'file' => fopen( $file->getPathname(), 'r' ) ,
+                //                'file' => fopen( $file->getPathname(), 'r' ) ,
             ];
 
             $multipart = [
-                'name'     => $title,
-                'filename'     => $title,
-                'Mime-Type'=> $mime,
-                'contents' => fopen( $file->getPathname(), 'r' ),
+                'name' => $title,
+                'filename' => $title,
+                'Mime-Type' => $mime,
+                'contents' => fopen($file->getPathname(), 'r'),
             ];
             $multipart_form = [];
-            foreach ($request as $key => $value){
+            foreach ($request as $key => $value) {
                 $multipart_form[] = [
                     'name' => $key,
                     'contents' => $value,
@@ -160,29 +157,29 @@ trait SendCMWRequest
 
             // try to send request to upload file
             try {
-                $boundary = '----WebKitFormBoundary'. $id;
+                $boundary = '----WebKitFormBoundary'.$id;
                 $response = $this->client->post(
                     $api_url, [
-                    'headers' => [
-                        'Accept'                => '*/*', // application/json
-                        'Content-Type'          => 'multipart/form-data; charset=utf-8; boundary='.$boundary,
-                        'Authorization'         => $auth_code,
+                        'headers' => [
+                            'Accept' => '*/*', // application/json
+                            'Content-Type' => 'multipart/form-data; charset=utf-8; boundary='.$boundary,
+                            'Authorization' => $auth_code,
+                        ],
+                        //                    'multipart' => [
+                        //                        $multipart
+                        //                    ],
+                        //                    'form-data' => [
+                        //                        $request
+                        //                    ],
+                        'form_params' => $request,
+                        //                        'body' => new \GuzzleHttp\Psr7\MultipartStream($multipart_form, $boundary),
                     ],
-                    //                    'multipart' => [
-                    //                        $multipart
-                    //                    ],
-                    //                    'form-data' => [
-                    //                        $request
-                    //                    ],
-                    'form_params' => $request
-//                        'body' => new \GuzzleHttp\Psr7\MultipartStream($multipart_form, $boundary),
-                ],
                 );
 //            echo '<pre style="display:none;">';
 //            var_dump($response);
 //            echo '</pre>';
 //                echo $response->getBody()->getContents();
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 echo $e->getMessage();
 
                 $response = $e->getResponse();
@@ -200,7 +197,6 @@ trait SendCMWRequest
 //        var_dump($ids);
 //        echo '</pre>';
         return $ids;
-
 
         /*try {
 
@@ -239,11 +235,6 @@ trait SendCMWRequest
         }*/
     }
 
-
-    /**
-     * @param array $data
-     * @return array
-     */
     public function prepareData(array $data): array
     {
         $fields = config('cmw-config.fields');
@@ -252,8 +243,8 @@ trait SendCMWRequest
         $state = config('cmw-config.state');
         $project_id = config('cmw-config.project_id');
 
-        $cmwData =    [
-            'title' => 'Message from ' . ($data[$fields['name']] ?? ''),
+        $cmwData = [
+            'title' => 'Message from '.($data[$fields['name']] ?? ''),
             'description' => ($data[$fields['message']]) ?? '',
             'c_primaryemail' => $data[$fields['email']] ?? '',
             'c_workphone' => $data[$fields['phone']] ?? '',
@@ -265,16 +256,16 @@ trait SendCMWRequest
         ];
 
         // attach uploaded files to futures deals
-        if( isset($data[$fields['files']]) ) {
-            foreach ( $data[$fields['files']] as $id=>$title){
+        if (isset($data[$fields['files']])) {
+            foreach ($data[$fields['files']] as $id => $title) {
 
                 $cmwData['attachments'][] = [
                     [
-                        'file_uid'=> $id,
-                        'id'=> $id,
-                        'pending'=> true,
-                        'title'=> $title,
-                    ]
+                        'file_uid' => $id,
+                        'id' => $id,
+                        'pending' => true,
+                        'title' => $title,
+                    ],
                 ];
             }
 

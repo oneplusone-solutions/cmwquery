@@ -2,15 +2,13 @@
 
 namespace OnePlusOne\CMWQuery\Widgets;
 
-use App\Filament\Widgets\StatsOverviewWidget;
 use Flowframe\Trend\Trend;
-use Illuminate\Support\Carbon;
 use Flowframe\Trend\TrendValue;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
 class CMWWidget extends ApexChartWidget
 {
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     protected static string $chartId = 'CMWChart';
 
@@ -72,5 +70,4 @@ class CMWWidget extends ApexChartWidget
                 ->default(now()),
         ];
     }
-
 }
