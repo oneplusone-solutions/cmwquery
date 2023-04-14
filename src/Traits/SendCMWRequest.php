@@ -4,11 +4,11 @@ namespace OnePlusOne\CMWQuery\Traits;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 trait SendCMWRequest
 {
@@ -20,7 +20,7 @@ trait SendCMWRequest
 //            var_dump($eventName);
 //            echo '</pre>';
 
-            static::$eventName(function (Model $model) use ($eventName) {
+            static::$eventName(function (Model $model) {
 //                echo '<pre style="display:none;">';
 //                var_dump($model);
 //                echo '</pre>';
@@ -37,7 +37,6 @@ trait SendCMWRequest
             });
         });
 
-
 //        exit('1111111111111111');
 //        die();
 
@@ -52,16 +51,17 @@ trait SendCMWRequest
     protected static function afterBooted(): void
     {
     }
+
     /**
      * Get the event names that should be recorded.
      **/
     protected static function eventsToBeRecorded(): Collection
     {
 
-        return  collect([
+        return collect([
             'created',
             'updated',
-//            'deleted',
+            //            'deleted',
         ]);
 
     }
@@ -312,13 +312,13 @@ trait SendCMWRequest
 //            'project_id' => $project_id,
 //        ];
 
-        $cmwData =    [
+        $cmwData = [
             'title' => $data[$fields['name']] ?? '',
             'description' => $data[$fields['message']],
             'c_primaryemail' => $data[$fields['email']] ?? '',
             'c_workphone' => $data['phone'] ?? '',
             'c_source' => $data['website'] ?? '',
-//            'c_domain' => $domain,
+            //            'c_domain' => $domain,
             'c_domain' => 'oneplusone.solutions',
             'process_template_id' => $process_template_id,
             'state' => $state,
