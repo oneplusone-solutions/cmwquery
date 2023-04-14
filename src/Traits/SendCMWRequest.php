@@ -4,27 +4,66 @@ namespace OnePlusOne\CMWQuery\Traits;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Mail;
 
 trait SendCMWRequest
 {
-    protected static function bootSendCMWRequest(array $data): void
+    protected static function bootSendCMWRequest(): void
     {
-        $this->beforeBooted();
+//        static::beforeBooted();
+        static::eventsToBeRecorded()->each(function ($eventName) {
+//            echo '<pre style="display:none;">';
+//            var_dump($eventName);
+//            echo '</pre>';
 
-        $this->makeRequest($data);
-        exit('1111111111111111');
+            static::$eventName(function (Model $model) use ($eventName) {
+//                echo '<pre style="display:none;">';
+//                var_dump($model);
+//                echo '</pre>';
+//                Mail::send([], [], function ($message) {
+//                    $message->to('galina.bublik@oneplusone.solutions')
+//                    ->subject('Test Query')
+//                    ->setBody('<pre>'.$model.'</pre>', 'text/html'); // for HTML rich messages
+//                });
+//
+//                die('1111111111111111111111111111');
 
-        $this->afterBooted();
+                static::makeRequest($model->toArray());
+
+            });
+        });
+
+
+//        exit('1111111111111111');
+//        die();
+
+//        $this->afterBooted();
 
     }
 
-    protected function beforeBooted(): void
+    protected static function beforeBooted(): void
     {
     }
 
-    protected function afterBooted(): void
+    protected static function afterBooted(): void
     {
+    }
+    /**
+     * Get the event names that should be recorded.
+     **/
+    protected static function eventsToBeRecorded(): Collection
+    {
+
+        return  collect([
+            'created',
+            'updated',
+//            'deleted',
+        ]);
+
     }
 //    protected static function boot(){
 //        parent::boot();
@@ -41,21 +80,21 @@ trait SendCMWRequest
      *
      * @throws \Exception
      */
-    public function makeRequest(array $data): string
+    public static function makeRequest(array $data): string
     {
         $client = new Client();
         $files_key = config('cmw-config.fields.files');
         //if request have files - try to upload before create deals
         // after uploaded files work with them flowIdentifier and titles
         if (isset($data[$files_key])) {
-            $data[$files_key] = $this->uploadFiles($data[$files_key]);
+            $data[$files_key] = static::uploadFiles($data[$files_key]);
         }
 
-        $inputData = $this->prepareData($data);
+        $inputData = static::prepareData($data);
 //        SendCMWQuery::dispatch($inputData);
 
-        $api_url = 'https://1pls1.comindwork.com/api/apialpha.ashx/tickets/multi';
-        $auth_code = 'CMW_AUTH_CODE 2bmN1gdVUFj3a5SmRU7Ly9PxNBdjkpIEvrahP77fByVh3b9qYi'; // add var to .env
+        $api_url = config('cmwquery.api_url');
+        $auth_code = config('cmwquery.auth_code'); // add var to .env
 
         try {
             $response = $client->post($api_url, [
@@ -77,7 +116,7 @@ trait SendCMWRequest
 
     }
 
-    public function uploadFiles(array $files): array
+    public static function uploadFiles(array $files): array
     {
 
         $auth_code = 'CMW_AUTH_CODE 2bmN1gdVUFj3a5SmRU7Ly9PxNBdjkpIEvrahP77fByVh3b9qYi'; // add var to .env
@@ -235,21 +274,52 @@ trait SendCMWRequest
         }*/
     }
 
-    public function prepareData(array $data): array
+    public static function prepareData(array $data): array
     {
-        $fields = config('cmw-config.fields');
-        $domain = config('cmw-config.domain');
-        $process_template_id = config('cmw-config.process_template_id');
-        $state = config('cmw-config.state');
-        $project_id = config('cmw-config.project_id');
+        $fields = config('cmwquery.fields');
+        $domain = $data[$fields['domain']] ?? config('cmwquery.domain');
+        $process_template_id = config('cmwquery.process_template_id');
+        $state = config('cmwquery.state');
+        $project_id = config('cmwquery.project_id');
+        echo '<pre style="display:none;">';
+        var_dump($process_template_id);
+        var_dump($state);
+        var_dump($project_id);
+        echo '</pre>';
 
-        $cmwData = [
-            'title' => 'Message from '.($data[$fields['name']] ?? ''),
-            'description' => ($data[$fields['message']]) ?? '',
+//        $cmwData = [
+//            'title' => $data[$fields['name']] ?? '',
+//            'description' => $data[$fields['message']] ?? '',
+//            'c_domain' => $domain,
+//            'c_primaryemail' => $data[$fields['email']] ?? '',
+//            'c_workphone' => $data[$fields['phone']] ?? '',
+//            'c_source' => 'site', //Can be site, email, phone
+//
+//            'c_org' => $data[$fields['company']] ?? '',
+//            'c_country' => $data[$fields['country']] ?? '',
+//            'c_position' => $data[$fields['position']] ?? '',
+//            'c_empl_role' => $data[$fields['role']] ?? '',
+//            'c_orgsize' => $data[$fields['employer']] ?? '',
+//            'c_sector' => $data[$fields['sector']] ?? '',
+//            'c_facebook' => $data[$fields['facebook']] ?? '',
+//            'c_instagram' => $data[$fields['instagram']] ?? '',
+//            'c_twitter' => $data[$fields['twitter']] ?? '',
+//            'c_youtube' => $data[$fields['youtube']] ?? '',
+//            'c_linkedinprofile' => $data[$fields['linkedin']] ?? '',
+//
+//            'process_template_id' => $process_template_id,
+//            'state' => $state,
+//            'project_id' => $project_id,
+//        ];
+
+        $cmwData =    [
+            'title' => $data[$fields['name']] ?? '',
+            'description' => $data[$fields['message']],
             'c_primaryemail' => $data[$fields['email']] ?? '',
-            'c_workphone' => $data[$fields['phone']] ?? '',
-            'c_source' => $data[$fields['website']] ?? '',
-            'c_domain' => $domain,
+            'c_workphone' => $data['phone'] ?? '',
+            'c_source' => $data['website'] ?? '',
+//            'c_domain' => $domain,
+            'c_domain' => 'oneplusone.solutions',
             'process_template_id' => $process_template_id,
             'state' => $state,
             'project_id' => $project_id,
