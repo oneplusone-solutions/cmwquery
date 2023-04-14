@@ -2,8 +2,6 @@
 
 namespace OnePlusOne\CMWQuery;
 
-
 class CMWQuery
 {
-
 }
