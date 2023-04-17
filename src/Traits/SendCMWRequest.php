@@ -4,11 +4,11 @@ namespace OnePlusOne\CMWQuery\Traits;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 trait SendCMWRequest
 {
@@ -20,7 +20,7 @@ trait SendCMWRequest
 //            var_dump($eventName);
 //            echo '</pre>';
 
-            static::$eventName(function (Model $model) use ($eventName) {
+            static::$eventName(function (Model $model) {
 //                echo '<pre style="display:none;">';
 //                var_dump($model);
 //                echo '</pre>';
@@ -37,7 +37,6 @@ trait SendCMWRequest
             });
         });
 
-
 //        exit('1111111111111111');
 //        die();
 
@@ -52,6 +51,7 @@ trait SendCMWRequest
     protected static function afterBooted(): void
     {
     }
+
     /**
      * Get the event names that should be recorded.
      **/
