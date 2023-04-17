@@ -58,11 +58,7 @@ trait SendCMWRequest
     protected static function eventsToBeRecorded(): Collection
     {
 
-        return  collect([
-            'created',
-            'updated',
-//            'deleted',
-        ]);
+        return  collect(config('cmwquery.events'));
 
     }
 //    protected static function boot(){
@@ -83,7 +79,7 @@ trait SendCMWRequest
     public static function makeRequest(array $data): string
     {
         $client = new Client();
-        $files_key = config('cmw-config.fields.files');
+        $files_key = config('cmwquery.fields.files');
         //if request have files - try to upload before create deals
         // after uploaded files work with them flowIdentifier and titles
         if (isset($data[$files_key])) {
@@ -108,7 +104,9 @@ trait SendCMWRequest
             if ($response->getStatusCode() !== 200) {
                 throw new \Exception('Failed to send data to third-party API');
             }
-
+            //echo '<pre style="display:none;">';
+            //var_dump($response->getBody()->getContents());
+            //echo '</pre>';
             return $response->getBody()->getContents();
         } catch (GuzzleException $e) {
             throw new \Exception('Failed to send data to third-party API: '.$e->getMessage());
@@ -281,45 +279,27 @@ trait SendCMWRequest
         $process_template_id = config('cmwquery.process_template_id');
         $state = config('cmwquery.state');
         $project_id = config('cmwquery.project_id');
-        echo '<pre style="display:none;">';
-        var_dump($process_template_id);
-        var_dump($state);
-        var_dump($project_id);
-        echo '</pre>';
 
-//        $cmwData = [
-//            'title' => $data[$fields['name']] ?? '',
-//            'description' => $data[$fields['message']] ?? '',
-//            'c_domain' => $domain,
-//            'c_primaryemail' => $data[$fields['email']] ?? '',
-//            'c_workphone' => $data[$fields['phone']] ?? '',
-//            'c_source' => 'site', //Can be site, email, phone
-//
-//            'c_org' => $data[$fields['company']] ?? '',
-//            'c_country' => $data[$fields['country']] ?? '',
-//            'c_position' => $data[$fields['position']] ?? '',
-//            'c_empl_role' => $data[$fields['role']] ?? '',
-//            'c_orgsize' => $data[$fields['employer']] ?? '',
-//            'c_sector' => $data[$fields['sector']] ?? '',
-//            'c_facebook' => $data[$fields['facebook']] ?? '',
-//            'c_instagram' => $data[$fields['instagram']] ?? '',
-//            'c_twitter' => $data[$fields['twitter']] ?? '',
-//            'c_youtube' => $data[$fields['youtube']] ?? '',
-//            'c_linkedinprofile' => $data[$fields['linkedin']] ?? '',
-//
-//            'process_template_id' => $process_template_id,
-//            'state' => $state,
-//            'project_id' => $project_id,
-//        ];
-
-        $cmwData =    [
+        $cmwData = [
             'title' => $data[$fields['name']] ?? '',
-            'description' => $data[$fields['message']],
+            'description' => $data[$fields['message']] ?? '',
+            'c_domain' => $domain,
             'c_primaryemail' => $data[$fields['email']] ?? '',
-            'c_workphone' => $data['phone'] ?? '',
-            'c_source' => $data['website'] ?? '',
-//            'c_domain' => $domain,
-            'c_domain' => 'oneplusone.solutions',
+            'c_workphone' => $data[$fields['phone']] ?? '',
+            'c_source' => 'site', //Can be site, email, phone
+//
+            'c_org' => $data[$fields['company']] ?? '',
+            'c_country' => $data[$fields['country']] ?? '',
+            'c_position' => $data[$fields['position']] ?? '',
+            'c_empl_role' => $data[$fields['role']] ?? '',
+            'c_orgsize' => $data[$fields['employer']] ?? '',
+            'c_sector' => $data[$fields['sector']] ?? '',
+            'c_facebook' => $data[$fields['facebook']] ?? '',
+            'c_instagram' => $data[$fields['instagram']] ?? '',
+            'c_twitter' => $data[$fields['twitter']] ?? '',
+            'c_youtube' => $data[$fields['youtube']] ?? '',
+            'c_linkedinprofile' => $data[$fields['linkedin']] ?? '',
+
             'process_template_id' => $process_template_id,
             'state' => $state,
             'project_id' => $project_id,
