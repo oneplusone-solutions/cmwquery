@@ -2,22 +2,22 @@
 
 return [
     //CMW authorize data
-    'project_id' => env('CMW_PROJECT', 'e5c6bfa3-ef4a-b95c-fbb5-ee092896ea36'),  // main 
+    'project_id' => env('CMW_PROJECT', 'e5c6bfa3-ef4a-b95c-fbb5-ee092896ea36'),  // main
 
     'api_url' => env('CMW_API_URL', 'https://1pls1.comindwork.com/api/apialpha.ashx/tickets/multi'),
 
     'auth_code' => 'CMW_AUTH_CODE '.env('CMW_AUTH_CODE'),
-    
+
     //Request parameters
 
-    'events'=> [
+    'events' => [
         'created',
         'updated',
-//            'deleted',
+        //            'deleted',
     ],
 
     'domain' => 'oneplusone.solutions',
-    
+
     'process_template_id' => 'default-app-crm-lead',
     'state' => 'lead-warm',
 
@@ -44,12 +44,10 @@ return [
         'youtube' => 'youtube',
         'linkedin' => 'linkedin',
     ],
-    
+
     // widget parameter
-    
+
     'model' => App\Models\Page::class,
     'period' => 'month',
-
-    
 
 ];
