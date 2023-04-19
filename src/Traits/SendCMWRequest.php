@@ -234,42 +234,6 @@ trait SendCMWRequest
 //        var_dump($ids);
 //        echo '</pre>';
         return $ids;
-
-        /*try {
-
-            $response = $this->client->post($api_url, [
-                'headers' => [
-                    'Content-Type' => 'application/json; charset=utf-8',
-                    'Authorization' => $auth_code
-                ],
-                'json' => [$request]
-            ]);
-//            $this->client->setDefaultOption(array('verify', false));
-//            $response = $this->client
-//                ->withHeaders()
-//                ->post($api_url, $headers, json_encode($request));
-
-//            $response = $this->client
-//                ->post('https://1pls1.comindwork.com/api/upload.ashx', [
-//                    'headers' => $headers,
-//                    'json' => $request
-//                ])
-//                ->withHeaders($headers)
-//            ;
-
-            if ($response->getStatusCode() !== 200) {
-                throw new \Exception('Failed to send data to third-party API');
-            }
-
-            echo '<pre style="display:none;">';
-            var_dump($response);
-            echo '</pre>';
-            die();
-
-            return $response->getBody()->getContents();
-        } catch (GuzzleException $e) {
-            throw new \Exception('Failed to send data to third-party API: ' . $e->getMessage());
-        }*/
     }
 
     public static function prepareData(array $data): array
