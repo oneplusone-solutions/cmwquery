@@ -58,7 +58,7 @@ trait SendCMWRequest
     protected static function eventsToBeRecorded(): Collection
     {
 
-        return  collect(config('cmwquery.events'));
+        return collect(config('cmwquery.events'));
 
     }
 //    protected static function boot(){
@@ -251,7 +251,7 @@ trait SendCMWRequest
             'c_primaryemail' => $data[$fields['email']] ?? '',
             'c_workphone' => $data[$fields['phone']] ?? '',
             'c_source' => 'site', //Can be site, email, phone
-//
+            //
             'c_org' => $data[$fields['company']] ?? '',
             'c_country' => $data[$fields['country']] ?? '',
             'c_position' => $data[$fields['position']] ?? '',
