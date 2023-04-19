@@ -76,6 +76,6 @@
             }
         }
     },
-    "minimum-stability": "dev-main",
+    "minimum-stability": "dev",
     "prefer-stable": true
 }
