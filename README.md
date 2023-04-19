@@ -1,9 +1,9 @@
 # Sent easy request to your comindwork
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/oneplusone/cmwquery.svg?style=flat-square)](https://packagist.org/packages/oneplusone/cmwquery)
-<!-- [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/oneplusone/cmwquery/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/oneplusone/cmwquery/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/oneplusone/cmwquery/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/oneplusone/cmwquery/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/oneplusone/cmwquery/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/oneplusone/cmwquery/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/oneplusone/cmwquery.svg?style=flat-square)](https://packagist.org/packages/oneplusone/cmwquery) -->
+[![Total Downloads](https://img.shields.io/packagist/dt/oneplusone/cmwquery.svg?style=flat-square)](https://packagist.org/packages/oneplusone/cmwquery)
 
 
 
@@ -40,7 +40,7 @@ This is the contents of the published config file:
 
 ```php
 return [
-	'cmw-query.php'
+	'cmwquery.php'
 ];
 ```
 
@@ -60,6 +60,13 @@ Indert in model body
 ```php
 use SendCMWRequest;
 ```
+
+In config edit 
+Markup : 	* access to your comindwork
+			* event to send request to comindwork
+			* ration fields in request with fields of your model
+			* widget parameter
+
 
 ## Testing
 

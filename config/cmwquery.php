@@ -46,7 +46,7 @@ return [
     ],
 
     // widget parameter
-
+    //    'widget' => true,
     'model' => App\Models\Page::class,
     'period' => 'month',
 
