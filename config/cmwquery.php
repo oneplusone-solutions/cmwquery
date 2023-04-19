@@ -10,10 +10,10 @@ return [
 
     //Request parameters
 
-    'events'=> [
+    'events' => [
         'created',
         'updated',
-//            'deleted',
+        //            'deleted',
     ],
 
     'domain' => 'oneplusone.solutions',
@@ -49,7 +49,5 @@ return [
 
     'model' => App\Models\Page::class,
     'period' => 'month',
-
-
 
 ];

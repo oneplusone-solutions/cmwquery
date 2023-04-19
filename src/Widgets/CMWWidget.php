@@ -95,7 +95,7 @@ class CMWWidget extends ApexChartWidget
 
         return [
             DatePicker::make('date_start')
-                 ->default($start),
+                ->default($start),
             DatePicker::make('date_end')
                 ->default(now()),
         ];
