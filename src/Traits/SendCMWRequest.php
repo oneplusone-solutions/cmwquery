@@ -4,12 +4,12 @@ namespace OnePlusOne\CMWQuery\Traits;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 trait SendCMWRequest
 {
@@ -21,7 +21,7 @@ trait SendCMWRequest
 //            var_dump($eventName);
 //            echo '</pre>';
 
-            static::$eventName(function (Model $model) use ($eventName) {
+            static::$eventName(function (Model $model) {
 //                echo '<pre style="display:none;">';
 //                var_dump($model);
 //                echo '</pre>';
@@ -38,7 +38,6 @@ trait SendCMWRequest
             });
         });
 
-
 //        exit('1111111111111111');
 //        die();
 
@@ -53,13 +52,14 @@ trait SendCMWRequest
     protected static function afterBooted(): void
     {
     }
+
     /**
      * Get the event names that should be recorded.
      **/
     protected static function eventsToBeRecorded(): Collection
     {
 
-        return  collect(config('cmwquery.events'));
+        return collect(config('cmwquery.events'));
 
     }
 
@@ -80,7 +80,7 @@ trait SendCMWRequest
             'c_primaryemail' => $data[$fields['email']] ?? '',
             'c_workphone' => $data[$fields['phone']] ?? '',
             'c_source' => 'site', //Can be site, email, phone
-//
+            //
             'c_org' => $data[$fields['company']] ?? '',
             'c_country' => $data[$fields['country']] ?? '',
             'c_position' => $data[$fields['position']] ?? '',
@@ -129,7 +129,7 @@ trait SendCMWRequest
         //if request have files - try to upload before create deals
         // after uploaded files work with them flowIdentifier and titles
         if (isset($data[$files_key])) {
-            if( is_string( $data[$files_key]) ){
+            if (is_string($data[$files_key])) {
 //                echo 'here1111111111111';
                 $data[$files_key] = static::uploadFile($data[$files_key]);
             } else {
@@ -163,12 +163,14 @@ trait SendCMWRequest
             echo '<pre>';
             var_dump($response->getBody()->getContents());
             echo '</pre>';
+
             return $response->getBody()->getContents();
         } catch (GuzzleException $e) {
             throw new \Exception('Failed to send data to third-party API: '.$e->getMessage());
         }
 
     }
+
     public static function uploadFiles(array $files): array
     {
         $ids = [];
@@ -188,14 +190,14 @@ trait SendCMWRequest
         $ids = [];
 
         $project_id = config('cmwquery.project_id');
-        if( $file instanceof \Illuminate\Http\UploadedFile ){
+        if ($file instanceof \Illuminate\Http\UploadedFile) {
 
             $title = $file->getClientOriginalName();
-            $size= $file->getSize();
-            $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'. floor(microtime(true) * 1000); //Str::uuid()
+            $size = $file->getSize();
+            $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'.floor(microtime(true) * 1000); //Str::uuid()
             $ids[$id] = $title;
             $mime = $file->getmimeType();
-            $path =$file->getPathname();
+            $path = $file->getPathname();
 
 //            $multipart = [
 //                'name' => $title,
@@ -210,21 +212,19 @@ trait SendCMWRequest
 //                    'contents' => $value,
 //                ];
 //            }
-        } else if(is_string($file)){
+        } elseif (is_string($file)) {
             $dir = config('filament.default_filesystem_disk') ?? 'public';
             $storage = Storage::disk($dir);
 
-            if ( $storage->exists($file) ) {
+            if ($storage->exists($file)) {
                 //        $image = convertToWebp($image);
 
                 $title = basename($file);
-                $size= $storage->size($file);
-                $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'. floor(microtime(true) * 1000);
+                $size = $storage->size($file);
+                $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'.floor(microtime(true) * 1000);
 //                $id = Str::uuid() . '-' . $size . '-' . str_replace([' ', '.'], '_', $title) . '-' . floor(microtime(true) * 1000);
                 $ids[$id] = $title;
                 $path = $storage->path($file);
-
-
 
             } else {
                 throw new \Exception('Can\'t find file');
@@ -248,9 +248,11 @@ trait SendCMWRequest
         echo '<pre style="display:none;">';
         var_dump($request);
         echo '</pre>';
-        static::uploadRequest( $request);
+        static::uploadRequest($request);
+
         return $ids;
     }
+
     public static function uploadRequest(array $request): void
     {
         $client = new Client();
@@ -261,20 +263,20 @@ trait SendCMWRequest
         try {
             $response = $client->post(
                 $api_url, [
-                'headers' => [
-//                    'Accept' => '*/*', // application/json
-                    'Content-Type' => 'multipart/form-data; boundary='.$boundary,
-                    'Authorization' => $auth_code,
+                    'headers' => [
+                        //                    'Accept' => '*/*', // application/json
+                        'Content-Type' => 'multipart/form-data; boundary='.$boundary,
+                        'Authorization' => $auth_code,
+                    ],
+                    //                    'multipart' => [
+                    //                        $multipart
+                    //                    ],
+                    //                    'form-data' => [
+                    //                        $request
+                    //                    ],
+                    'form-data' => $request,
+                    //                        'body' => new \GuzzleHttp\Psr7\MultipartStream($multipart_form, $boundary),
                 ],
-                //                    'multipart' => [
-                //                        $multipart
-                //                    ],
-                //                    'form-data' => [
-                //                        $request
-                //                    ],
-                'form-data' => $request,
-                //                        'body' => new \GuzzleHttp\Psr7\MultipartStream($multipart_form, $boundary),
-            ],
             );
 //
             echo $response->getBody()->getContents();
@@ -344,7 +346,4 @@ trait SendCMWRequest
             throw new \Exception('Failed to send data to third-party API: ' . $e->getMessage());
         }*/
     }
-
-
-
 }
