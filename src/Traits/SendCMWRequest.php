@@ -238,13 +238,26 @@ trait SendCMWRequest
             'flowChunkSize' => 1048576,
             'flowCurrentChunkSize' => $size,
             'flowTotalSize' => $size,
-            'FlowIdentifier' => $id,
+            'flowIdentifier' => $id,
             'flowFilename' => $title,
             'flowRelativePath' => $title,
             'flowTotalChunks' => 1,
             //                'file' => file_get_contents($file->getRealPath()),
-            'file' => fopen($path, 'r'),
+//            'file' => fopen($path, 'r'),
         ];
+        $multipart = [
+            'name' => 'file',
+            'filename' => $title,
+            'Mime-Type' => $mime,
+            'contents' => fopen($path, 'r'),
+        ];
+        $multipart_form = [$multipart];
+        foreach ($request as $key => $value) {
+            $multipart_form[] = [
+                'name' => $key,
+                'contents' => $value,
+            ];
+        }
         echo '<pre style="display:none;">';
         var_dump($request);
         echo '</pre>';
@@ -256,23 +269,22 @@ trait SendCMWRequest
         $client = new Client();
         $api_url = 'https://api.comindwork.com/api/upload';
         $auth_code = config('cmwquery.auth_code');
-        $boundary = '--WebKitFormBoundary'.Str::random(16); //.floor(microtime(true) * 1000);
+//        $boundary = '--WebKitFormBoundary'.Str::random(16); //.floor(microtime(true) * 1000);
+//        $multipart = new \GuzzleHttp\Psr7\MultipartStream($request);
 
         try {
             $response = $client->post(
                 $api_url, [
                 'headers' => [
 //                    'Accept' => '*/*', // application/json
-                    'Content-Type' => 'multipart/form-data; boundary='.$boundary,
+//                    'Content-Type' => 'multipart/form-data; boundary='.$boundary,
                     'Authorization' => $auth_code,
                 ],
+                'multipart' => $request,
                 //                    'multipart' => [
                 //                        $multipart
                 //                    ],
-                //                    'form-data' => [
-                //                        $request
-                //                    ],
-                'form-data' => $request,
+//                'form-data' => $request,
                 //                        'body' => new \GuzzleHttp\Psr7\MultipartStream($multipart_form, $boundary),
             ],
             );
