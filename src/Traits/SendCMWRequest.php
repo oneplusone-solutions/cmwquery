@@ -2,16 +2,15 @@
 
 namespace OnePlusOne\CMWQuery\Traits;
 
+use Filament\Notifications\Notification;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-
-use Filament\Notifications\Notification;
+use Illuminate\Support\Str;
 
 trait SendCMWRequest
 {
@@ -23,7 +22,7 @@ trait SendCMWRequest
 //            var_dump($eventName);
 //            echo '</pre>';
 
-            static::$eventName(function (Model $model) use ($eventName) {
+            static::$eventName(function (Model $model) {
 //                echo '<pre style="display:none;">';
 //                var_dump($model);
 //                echo '</pre>';
@@ -40,7 +39,6 @@ trait SendCMWRequest
             });
         });
 
-
 //        exit('1111111111111111');
 //        die();
 
@@ -55,13 +53,14 @@ trait SendCMWRequest
     protected static function afterBooted(): void
     {
     }
+
     /**
      * Get the event names that should be recorded.
      **/
     protected static function eventsToBeRecorded(): Collection
     {
 
-        return  collect(config('cmwquery.events'));
+        return collect(config('cmwquery.events'));
 
     }
 //    protected static function boot(){
@@ -86,7 +85,7 @@ trait SendCMWRequest
         //if request have files - try to upload before create deals
         // after uploaded files work with them flowIdentifier and titles
         if (isset($data[$files_key])) {
-            if( is_string( $data[$files_key]) ){
+            if (is_string($data[$files_key])) {
 //                echo 'here1111111111111';
                 $data[$files_key] = static::uploadFile($data[$files_key]);
             } else {
@@ -116,7 +115,7 @@ trait SendCMWRequest
 
             if ($response->getStatusCode() !== 200) {
                 Notification::make()
-                    ->title( 'Failed to send data to third-party API: '.$response->getBody()->getContents() )
+                    ->title('Failed to send data to third-party API: '.$response->getBody()->getContents())
                     ->icon('heroicon-o-emoji-sad')
                     ->iconColor('danger')
                     ->send();
@@ -133,13 +132,14 @@ trait SendCMWRequest
 //            return $response->getBody()->getContents();
         } catch (GuzzleException $e) {
             Notification::make()
-                ->title( 'Failed to send data to third-party API: '.$e->getMessage() )
+                ->title('Failed to send data to third-party API: '.$e->getMessage())
                 ->icon('heroicon-o-emoji-sad')
                 ->iconColor('danger')
                 ->send();
         }
 
     }
+
     public static function uploadFiles(array $files): array
     {
 //        $project_id = config('cmwquery.project_id');
@@ -154,7 +154,6 @@ trait SendCMWRequest
 //        echo '</pre>';
         return $ids;
 
-
     }
 
     public static function uploadFile(string $file): array
@@ -162,34 +161,32 @@ trait SendCMWRequest
         $ids = [];
 
         $project_id = config('cmwquery.project_id');
-        if( $file instanceof \Illuminate\Http\UploadedFile ){
+        if ($file instanceof \Illuminate\Http\UploadedFile) {
 
             $title = $file->getClientOriginalName();
-            $size= $file->getSize();
-            $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'. floor(microtime(true) * 1000); //Str::uuid()
+            $size = $file->getSize();
+            $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'.floor(microtime(true) * 1000); //Str::uuid()
             $ids[$id] = $title;
             $mime = $file->getmimeType();
-            $path =$file->getPathname();
-        } else if(is_string($file)){
+            $path = $file->getPathname();
+        } elseif (is_string($file)) {
             $dir = config('filament.default_filesystem_disk') ?? 'public';
             $storage = Storage::disk($dir);
             $mime = $storage->mimeType($file);
 
-            if ( $storage->exists($file) ) {
+            if ($storage->exists($file)) {
                 //        $image = convertToWebp($image);
 
                 $title = basename($file);
-                $size= $storage->size($file);
+                $size = $storage->size($file);
 //                $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'. floor(microtime(true) * 1000);
-                $id = Str::uuid() . '-' . $size . '-' . str_replace([' ', '.'], '_', $title) . '-' . floor(microtime(true) * 1000);
+                $id = Str::uuid().'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'.floor(microtime(true) * 1000);
                 $ids[$id] = $title;
                 $path = $storage->path($file);
 
-
-
             } else {
                 Notification::make()
-                    ->title( 'Can\'t find file' )
+                    ->title('Can\'t find file')
                     ->icon('heroicon-o-emoji-sad')
                     ->iconColor('danger')
                     ->send();
@@ -197,7 +194,7 @@ trait SendCMWRequest
 
         } else {
             Notification::make()
-                ->title( 'Can\'t find file' )
+                ->title('Can\'t find file')
                 ->icon('heroicon-o-emoji-sad')
                 ->iconColor('danger')
                 ->send();
@@ -212,7 +209,7 @@ trait SendCMWRequest
             'flowRelativePath' => $title,
             'flowTotalChunks' => 1,
             //                'file' => file_get_contents($file->getRealPath()),
-//            'file' => fopen($path, 'r'),
+            //            'file' => fopen($path, 'r'),
         ];
         $multipart = [
             'name' => 'file',
@@ -230,9 +227,11 @@ trait SendCMWRequest
 //        echo '<pre style="display:none;">';
 //        var_dump($request);
 //        echo '</pre>';
-        static::uploadRequest( $multipart_form);
+        static::uploadRequest($multipart_form);
+
         return $ids;
     }
+
     public static function uploadRequest(array $request): void
     {
         $client = new Client();
@@ -243,19 +242,19 @@ trait SendCMWRequest
         try {
             $response = $client->post(
                 $api_url, [
-                'headers' => [
-                    'Authorization' => $auth_code,
+                    'headers' => [
+                        'Authorization' => $auth_code,
+                    ],
+                    'multipart' => $request,
                 ],
-                'multipart' => $request,
-            ],
             );
-            if( $response->getStatusCode() != 200 ){
+            if ($response->getStatusCode() != 200) {
                 Notification::make()
-                    ->title( $response->getStatusCode().$response->getBody()->getContents() )
+                    ->title($response->getStatusCode().$response->getBody()->getContents())
                     ->icon('heroicon-o-emoji-sad')
                     ->iconColor('danger')
                     ->send();
-            } else{
+            } else {
                 Notification::make()
                     ->title('Upload file successfull')
                     ->success()
@@ -263,16 +262,14 @@ trait SendCMWRequest
             }
         } catch (\Exception $e) {
             Notification::make()
-                ->title( $e->getMessage() )
+                ->title($e->getMessage())
                 ->icon('heroicon-o-emoji-sad')
                 ->iconColor('danger')
                 ->send();
+
             return;
         }
     }
-
-
-
 
     public static function prepareData(array $data): array
     {
@@ -289,7 +286,7 @@ trait SendCMWRequest
             'c_primaryemail' => $data[$fields['email']] ?? '',
             'c_workphone' => $data[$fields['phone']] ?? '',
             'c_source' => 'site', //Can be site, email, phone
-//
+            //
             'c_org' => $data[$fields['company']] ?? '',
             'c_country' => $data[$fields['country']] ?? '',
             'c_position' => $data[$fields['position']] ?? '',
