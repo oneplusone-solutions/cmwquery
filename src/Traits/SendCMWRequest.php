@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
+use Filament\Notifications\Notification;
+
 trait SendCMWRequest
 {
     protected static function bootSendCMWRequest(): void
@@ -62,8 +64,215 @@ trait SendCMWRequest
         return  collect(config('cmwquery.events'));
 
     }
+//    protected static function boot(){
+//        parent::boot();
+//        self::creating(function($model){
+//            $model->user_id = auth()->id();
+//        });
+//        self::addGlobalScope(function(Builder $builder){
+//           $builder->where('user_id', auth()->id());
+//        });
+//    }
 
-    /* Generate and send request*/
+    /**
+     * @param  array  $inputData
+     *
+     * @throws \Exception
+     */
+    public static function makeRequest(array $data): void
+    {
+        $client = new Client();
+        $files_key = config('cmwquery.fields.files');
+        //if request have files - try to upload before create deals
+        // after uploaded files work with them flowIdentifier and titles
+        if (isset($data[$files_key])) {
+            if( is_string( $data[$files_key]) ){
+//                echo 'here1111111111111';
+                $data[$files_key] = static::uploadFile($data[$files_key]);
+            } else {
+//                echo 'here 222222222222';
+                $data[$files_key] = static::uploadFiles($data[$files_key]);
+
+            }
+        }
+
+        $inputData = static::prepareData($data);
+//        SendCMWQuery::dispatch($inputData);
+
+        $api_url = config('cmwquery.api_url');
+        $auth_code = config('cmwquery.auth_code'); // add var to .env
+//        echo '<pre>';
+//        var_dump($inputData);
+//        echo '</pre>';
+
+        try {
+            $response = $client->post($api_url, [
+                'headers' => [
+                    'Content-Type' => 'application/json; charset=utf-8',
+                    'Authorization' => $auth_code,
+                ],
+                'json' => [$inputData],
+            ]);
+
+            if ($response->getStatusCode() !== 200) {
+                Notification::make()
+                    ->title( 'Failed to send data to third-party API: '.$response->getBody()->getContents() )
+                    ->icon('heroicon-o-emoji-sad')
+                    ->iconColor('danger')
+                    ->send();
+//                throw new \Exception('Failed to send data to third-party API');
+            } else {
+                Notification::make()
+                    ->title('Created Lead successfull')
+                    ->success()
+                    ->send();
+            }
+//            echo '<pre>';
+//            var_dump($response->getBody()->getContents());
+//            echo '</pre>';
+//            return $response->getBody()->getContents();
+        } catch (GuzzleException $e) {
+            Notification::make()
+                ->title( 'Failed to send data to third-party API: '.$e->getMessage() )
+                ->icon('heroicon-o-emoji-sad')
+                ->iconColor('danger')
+                ->send();
+        }
+
+    }
+    public static function uploadFiles(array $files): array
+    {
+//        $project_id = config('cmwquery.project_id');
+        $ids = [];
+
+        // prepare data for each file
+        foreach ($files as $file) {
+            $ids = merge($ids, static::uploadFile($file));
+        }
+//        echo '<pre style="display:none;">';
+//        var_dump($ids);
+//        echo '</pre>';
+        return $ids;
+
+
+    }
+
+    public static function uploadFile(string $file): array
+    {
+        $ids = [];
+
+        $project_id = config('cmwquery.project_id');
+        if( $file instanceof \Illuminate\Http\UploadedFile ){
+
+            $title = $file->getClientOriginalName();
+            $size= $file->getSize();
+            $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'. floor(microtime(true) * 1000); //Str::uuid()
+            $ids[$id] = $title;
+            $mime = $file->getmimeType();
+            $path =$file->getPathname();
+        } else if(is_string($file)){
+            $dir = config('filament.default_filesystem_disk') ?? 'public';
+            $storage = Storage::disk($dir);
+            $mime = $storage->mimeType($file);
+
+            if ( $storage->exists($file) ) {
+                //        $image = convertToWebp($image);
+
+                $title = basename($file);
+                $size= $storage->size($file);
+//                $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'. floor(microtime(true) * 1000);
+                $id = Str::uuid() . '-' . $size . '-' . str_replace([' ', '.'], '_', $title) . '-' . floor(microtime(true) * 1000);
+                $ids[$id] = $title;
+                $path = $storage->path($file);
+
+
+
+            } else {
+                Notification::make()
+                    ->title( 'Can\'t find file' )
+                    ->icon('heroicon-o-emoji-sad')
+                    ->iconColor('danger')
+                    ->send();
+            }
+
+        } else {
+            Notification::make()
+                ->title( 'Can\'t find file' )
+                ->icon('heroicon-o-emoji-sad')
+                ->iconColor('danger')
+                ->send();
+        }
+        $request = [
+            'flowChunkNumber' => 1,
+            'flowChunkSize' => 1048576,
+            'flowCurrentChunkSize' => $size,
+            'flowTotalSize' => $size,
+            'flowIdentifier' => $id,
+            'flowFilename' => $title,
+            'flowRelativePath' => $title,
+            'flowTotalChunks' => 1,
+            //                'file' => file_get_contents($file->getRealPath()),
+//            'file' => fopen($path, 'r'),
+        ];
+        $multipart = [
+            'name' => 'file',
+            'filename' => $title,
+            'Mime-Type' => $mime,
+            'contents' => fopen($path, 'r'),
+        ];
+        $multipart_form = [$multipart];
+        foreach ($request as $key => $value) {
+            $multipart_form[] = [
+                'name' => $key,
+                'contents' => $value,
+            ];
+        }
+//        echo '<pre style="display:none;">';
+//        var_dump($request);
+//        echo '</pre>';
+        static::uploadRequest( $multipart_form);
+        return $ids;
+    }
+    public static function uploadRequest(array $request): void
+    {
+        $client = new Client();
+        $api_url = 'https://api.comindwork.com/api/upload';
+        $auth_code = config('cmwquery.auth_code');
+        $multipart = new \GuzzleHttp\Psr7\MultipartStream($request);
+
+        try {
+            $response = $client->post(
+                $api_url, [
+                'headers' => [
+                    'Authorization' => $auth_code,
+                ],
+                'multipart' => $request,
+            ],
+            );
+            if( $response->getStatusCode() != 200 ){
+                Notification::make()
+                    ->title( $response->getStatusCode().$response->getBody()->getContents() )
+                    ->icon('heroicon-o-emoji-sad')
+                    ->iconColor('danger')
+                    ->send();
+            } else{
+                Notification::make()
+                    ->title('Upload file successfull')
+                    ->success()
+                    ->send();
+            }
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title( $e->getMessage() )
+                ->icon('heroicon-o-emoji-sad')
+                ->iconColor('danger')
+                ->send();
+            return;
+        }
+    }
+
+
+
 
     public static function prepareData(array $data): array
     {
@@ -102,249 +311,17 @@ trait SendCMWRequest
         if (isset($data[$fields['files']])) {
             foreach ($data[$fields['files']] as $id => $title) {
 
-                $cmwData['attachments'][] = [
+                $cmwData['attachments'][] =
                     [
                         'file_uid' => $id,
                         'id' => $id,
                         'pending' => true,
                         'title' => $title,
-                    ],
-                ];
+                    ];
             }
 
         }
 
         return $cmwData;
     }
-
-    /**
-     * @param  array  $inputData
-     *
-     * @throws \Exception
-     */
-    public static function makeRequest(array $data): string
-    {
-        $client = new Client();
-        $files_key = config('cmwquery.fields.files');
-        //if request have files - try to upload before create deals
-        // after uploaded files work with them flowIdentifier and titles
-        if (isset($data[$files_key])) {
-            if( is_string( $data[$files_key]) ){
-//                echo 'here1111111111111';
-                $data[$files_key] = static::uploadFile($data[$files_key]);
-            } else {
-//                echo 'here 222222222222';
-                $data[$files_key] = static::uploadFiles($data[$files_key]);
-
-            }
-        }
-
-        $inputData = static::prepareData($data);
-//        SendCMWQuery::dispatch($inputData);
-
-        $api_url = config('cmwquery.api_url');
-        $auth_code = config('cmwquery.auth_code'); // add var to .env
-        echo '<pre>';
-        var_dump($inputData);
-        echo '</pre>';
-
-        try {
-            $response = $client->post($api_url, [
-                'headers' => [
-                    'Content-Type' => 'application/json; charset=utf-8',
-                    'Authorization' => $auth_code,
-                ],
-                'json' => [$inputData],
-            ]);
-
-            if ($response->getStatusCode() !== 200) {
-                throw new \Exception('Failed to send data to third-party API');
-            }
-            echo '<pre>';
-            var_dump($response->getBody()->getContents());
-            echo '</pre>';
-            return $response->getBody()->getContents();
-        } catch (GuzzleException $e) {
-            throw new \Exception('Failed to send data to third-party API: '.$e->getMessage());
-        }
-
-    }
-    public static function uploadFiles(array $files): array
-    {
-        $ids = [];
-
-        // prepare data for each file
-        foreach ($files as $file) {
-            $ids = merge($ids, static::uploadFile($file));
-        }
-//        echo '<pre style="display:none;">';
-//        var_dump($ids);
-//        echo '</pre>';
-        return $ids;
-    }
-
-    public static function uploadFile(string $file): ?array
-    {
-        $ids = [];
-
-        $project_id = config('cmwquery.project_id');
-        if( $file instanceof \Illuminate\Http\UploadedFile ){
-
-            $title = $file->getClientOriginalName();
-            $size= $file->getSize();
-            $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'. floor(microtime(true) * 1000); //Str::uuid()
-            $ids[$id] = $title;
-            $mime = $file->getmimeType();
-            $path =$file->getPathname();
-
-//            $multipart = [
-//                'name' => $title,
-//                'filename' => $title,
-//                'Mime-Type' => $mime,
-//                'contents' => fopen(, 'r'),
-//            ];
-//            $multipart_form = [];
-//            foreach ($request as $key => $value) {
-//                $multipart_form[] = [
-//                    'name' => $key,
-//                    'contents' => $value,
-//                ];
-//            }
-        } else if(is_string($file)){
-            $dir = config('filament.default_filesystem_disk') ?? 'public';
-            $storage = Storage::disk($dir);
-
-            if ( $storage->exists($file) ) {
-                //        $image = convertToWebp($image);
-
-                $title = basename($file);
-                $size= $storage->size($file);
-                $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'. floor(microtime(true) * 1000);
-//                $id = Str::uuid() . '-' . $size . '-' . str_replace([' ', '.'], '_', $title) . '-' . floor(microtime(true) * 1000);
-                $ids[$id] = $title;
-                $path = $storage->path($file);
-
-
-
-            } else {
-                throw new \Exception('Can\'t find file');
-            }
-
-        } else {
-            throw new \Exception('Can\'t find file');
-        }
-        $request = [
-            'flowChunkNumber' => 1,
-            'flowChunkSize' => 1048576,
-            'flowCurrentChunkSize' => $size,
-            'flowTotalSize' => $size,
-            'FlowIdentifier' => $id,
-            'flowFilename' => $title,
-            'flowRelativePath' => $title,
-            'flowTotalChunks' => 1,
-            //                'file' => file_get_contents($file->getRealPath()),
-            'file' => fopen($path, 'r'),
-        ];
-        echo '<pre style="display:none;">';
-        var_dump($request);
-        echo '</pre>';
-        static::uploadRequest( $request);
-        return $ids;
-    }
-    public static function uploadRequest(array $request): void
-    {
-        $client = new Client();
-        $api_url = 'https://api.comindwork.com/api/upload';
-        $auth_code = config('cmwquery.auth_code');
-        $boundary = '--WebKitFormBoundary'.Str::random(16); //.floor(microtime(true) * 1000);
-
-        try {
-            $response = $client->post(
-                $api_url, [
-                'headers' => [
-//                    'Accept' => '*/*', // application/json
-                    'Content-Type' => 'multipart/form-data; boundary='.$boundary,
-                    'Authorization' => $auth_code,
-                ],
-                //                    'multipart' => [
-                //                        $multipart
-                //                    ],
-                //                    'form-data' => [
-                //                        $request
-                //                    ],
-                'form-data' => $request,
-                //                        'body' => new \GuzzleHttp\Psr7\MultipartStream($multipart_form, $boundary),
-            ],
-            );
-//
-            echo $response->getBody()->getContents();
-        } catch (\Exception $e) {
-            echo $e->getMessage();
-
-//            $response = $e->getResponse();
-////                echo '<pre style="display:none;">';
-////                var_dump($response);
-////                echo '</pre>';
-//            $responseBody = $response->getBody()->getContents();
-//
-//            echo $responseBody;
-            exit;
-        }
-        /*$response = $this->client->post($api_url, [
-            'headers' => [
-                'Content-Type' => 'application/json; charset=utf-8',
-                'Authorization' => $auth_code
-            ],
-            'json' => [$request]
-        ]);*/
-        /*$response = $this->client
-            ->attach('file', file_get_contents($file->getRealPath()), $request )
-            ->withHeaders(['Content-Type' => $file->getMimeType(),
-                'Authorization' => $auth_code ])
-            ->post($api_url, $request)
-            ->json()
-        ;
-        if ($response->getStatusCode() !== 200) {
-            throw new \Exception('Failed to send data to third-party API');
-        }
-        var_dump($response->getStatusCode());*/
-        /*try {
-
-            $response = $this->client->post($api_url, [
-                'headers' => [
-                    'Content-Type' => 'application/json; charset=utf-8',
-                    'Authorization' => $auth_code
-                ],
-                'json' => [$request]
-            ]);
-//            $this->client->setDefaultOption(array('verify', false));
-//            $response = $this->client
-//                ->withHeaders()
-//                ->post($api_url, $headers, json_encode($request));
-
-//            $response = $this->client
-//                ->post('https://1pls1.comindwork.com/api/upload.ashx', [
-//                    'headers' => $headers,
-//                    'json' => $request
-//                ])
-//                ->withHeaders($headers)
-//            ;
-
-            if ($response->getStatusCode() !== 200) {
-                throw new \Exception('Failed to send data to third-party API');
-            }
-
-            echo '<pre style="display:none;">';
-            var_dump($response);
-            echo '</pre>';
-            die();
-
-            return $response->getBody()->getContents();
-        } catch (GuzzleException $e) {
-            throw new \Exception('Failed to send data to third-party API: ' . $e->getMessage());
-        }*/
-    }
-
-
-
 }
