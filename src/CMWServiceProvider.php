@@ -20,24 +20,24 @@ class CMWServiceProvider extends PluginServiceProvider
             ->hasConfigFile()
             ->hasTranslations();
     }
-//    /**
-//     * Bootstrap any package services.
-//     *
-//     * @return void
-//     */
-//    public function boot()
-//    {
-//        $this->publishes([
-//            __DIR__.'/../config/cmw-query.php' => config_path('cmw-query.php'),
-//        ]);
-//    }
-//    public function packageConfiguring(Package $package): void
-//    {
-//        Event::listen(ServingFilament::class, [$this, 'sendRequest']);
-//    }
-//
-//    protected function sendRequest(ServingFilament $event): void
-//    {
-//        // ...
-//    }
+    //    /**
+    //     * Bootstrap any package services.
+    //     *
+    //     * @return void
+    //     */
+    //    public function boot()
+    //    {
+    //        $this->publishes([
+    //            __DIR__.'/../config/cmw-query.php' => config_path('cmw-query.php'),
+    //        ]);
+    //    }
+    //    public function packageConfiguring(Package $package): void
+    //    {
+    //        Event::listen(ServingFilament::class, [$this, 'sendRequest']);
+    //    }
+    //
+    //    protected function sendRequest(ServingFilament $event): void
+    //    {
+    //        // ...
+    //    }
 }

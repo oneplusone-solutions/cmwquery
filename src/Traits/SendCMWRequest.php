@@ -16,33 +16,33 @@ trait SendCMWRequest
 {
     protected static function bootSendCMWRequest(): void
     {
-//        static::beforeBooted();
+        //        static::beforeBooted();
         static::eventsToBeRecorded()->each(function ($eventName) {
-//            echo '<pre style="display:none;">';
-//            var_dump($eventName);
-//            echo '</pre>';
+            //            echo '<pre style="display:none;">';
+            //            var_dump($eventName);
+            //            echo '</pre>';
 
             static::$eventName(function (Model $model) {
-//                echo '<pre style="display:none;">';
-//                var_dump($model);
-//                echo '</pre>';
-//                Mail::send([], [], function ($message) {
-//                    $message->to('galina.bublik@oneplusone.solutions')
-//                    ->subject('Test Query')
-//                    ->setBody('<pre>'.$model.'</pre>', 'text/html'); // for HTML rich messages
-//                });
-//
-//                die('1111111111111111111111111111');
+                //                echo '<pre style="display:none;">';
+                //                var_dump($model);
+                //                echo '</pre>';
+                //                Mail::send([], [], function ($message) {
+                //                    $message->to('galina.bublik@oneplusone.solutions')
+                //                    ->subject('Test Query')
+                //                    ->setBody('<pre>'.$model.'</pre>', 'text/html'); // for HTML rich messages
+                //                });
+                //
+                //                die('1111111111111111111111111111');
 
                 static::makeRequest($model->toArray());
 
             });
         });
 
-//        exit('1111111111111111');
-//        die();
+        //        exit('1111111111111111');
+        //        die();
 
-//        $this->afterBooted();
+        //        $this->afterBooted();
 
     }
 
@@ -63,15 +63,15 @@ trait SendCMWRequest
         return collect(config('cmwquery.events'));
 
     }
-//    protected static function boot(){
-//        parent::boot();
-//        self::creating(function($model){
-//            $model->user_id = auth()->id();
-//        });
-//        self::addGlobalScope(function(Builder $builder){
-//           $builder->where('user_id', auth()->id());
-//        });
-//    }
+    //    protected static function boot(){
+    //        parent::boot();
+    //        self::creating(function($model){
+    //            $model->user_id = auth()->id();
+    //        });
+    //        self::addGlobalScope(function(Builder $builder){
+    //           $builder->where('user_id', auth()->id());
+    //        });
+    //    }
 
     /**
      * @param  array  $inputData
@@ -86,23 +86,23 @@ trait SendCMWRequest
         // after uploaded files work with them flowIdentifier and titles
         if (isset($data[$files_key])) {
             if (is_string($data[$files_key])) {
-//                echo 'here1111111111111';
+                //                echo 'here1111111111111';
                 $data[$files_key] = static::uploadFile($data[$files_key]);
             } else {
-//                echo 'here 222222222222';
+                //                echo 'here 222222222222';
                 $data[$files_key] = static::uploadFiles($data[$files_key]);
 
             }
         }
 
         $inputData = static::prepareData($data);
-//        SendCMWQuery::dispatch($inputData);
+        //        SendCMWQuery::dispatch($inputData);
 
         $api_url = config('cmwquery.api_url');
         $auth_code = config('cmwquery.auth_code'); // add var to .env
-//        echo '<pre>';
-//        var_dump($inputData);
-//        echo '</pre>';
+        //        echo '<pre>';
+        //        var_dump($inputData);
+        //        echo '</pre>';
 
         try {
             $response = $client->post($api_url, [
@@ -119,17 +119,17 @@ trait SendCMWRequest
                     ->icon('heroicon-o-emoji-sad')
                     ->iconColor('danger')
                     ->send();
-//                throw new \Exception('Failed to send data to third-party API');
+                //                throw new \Exception('Failed to send data to third-party API');
             } else {
                 Notification::make()
                     ->title('Created Lead successfull')
                     ->success()
                     ->send();
             }
-//            echo '<pre>';
-//            var_dump($response->getBody()->getContents());
-//            echo '</pre>';
-//            return $response->getBody()->getContents();
+            //            echo '<pre>';
+            //            var_dump($response->getBody()->getContents());
+            //            echo '</pre>';
+            //            return $response->getBody()->getContents();
         } catch (GuzzleException $e) {
             Notification::make()
                 ->title('Failed to send data to third-party API: '.$e->getMessage())
@@ -142,16 +142,16 @@ trait SendCMWRequest
 
     public static function uploadFiles(array $files): array
     {
-//        $project_id = config('cmwquery.project_id');
+        //        $project_id = config('cmwquery.project_id');
         $ids = [];
 
         // prepare data for each file
         foreach ($files as $file) {
             $ids = array_merge($ids, static::uploadFile($file));
         }
-//        echo '<pre style="display:none;">';
-//        var_dump($ids);
-//        echo '</pre>';
+        //        echo '<pre style="display:none;">';
+        //        var_dump($ids);
+        //        echo '</pre>';
         return $ids;
 
     }
@@ -179,7 +179,7 @@ trait SendCMWRequest
 
                 $title = basename($file);
                 $size = $storage->size($file);
-//                $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'. floor(microtime(true) * 1000);
+                //                $id = $project_id.'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'. floor(microtime(true) * 1000);
                 $id = Str::uuid().'-'.$size.'-'.str_replace([' ', '.'], '_', $title).'-'.floor(microtime(true) * 1000);
                 $ids[$id] = $title;
                 $path = $storage->path($file);
@@ -224,9 +224,9 @@ trait SendCMWRequest
                 'contents' => $value,
             ];
         }
-//        echo '<pre style="display:none;">';
-//        var_dump($request);
-//        echo '</pre>';
+        //        echo '<pre style="display:none;">';
+        //        var_dump($request);
+        //        echo '</pre>';
         static::uploadRequest($multipart_form);
 
         return $ids;
