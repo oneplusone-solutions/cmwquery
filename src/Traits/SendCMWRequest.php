@@ -147,7 +147,7 @@ trait SendCMWRequest
 
         // prepare data for each file
         foreach ($files as $file) {
-            $ids = merge($ids, static::uploadFile($file));
+            $ids = array_merge($ids, static::uploadFile($file));
         }
 //        echo '<pre style="display:none;">';
 //        var_dump($ids);
