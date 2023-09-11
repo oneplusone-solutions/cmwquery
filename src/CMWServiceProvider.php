@@ -3,11 +3,11 @@
 namespace OnePlusOne\CMWQuery;
 
 use Filament\Events\ServingFilament;
-use Filament\PluginServiceProvider;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 use OnePlusOne\CMWQuery\Widgets\CMWWidget;
 use Spatie\LaravelPackageTools\Package;
 
-class CMWServiceProvider extends PluginServiceProvider
+class CMWServiceProvider extends PackageServiceProvider
 {
     protected array $widgets = [
         CMWWidget::class,
