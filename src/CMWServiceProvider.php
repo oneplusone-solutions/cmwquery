@@ -3,9 +3,9 @@
 namespace OnePlusOne\CMWQuery;
 
 use Filament\Events\ServingFilament;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
 use OnePlusOne\CMWQuery\Widgets\CMWWidget;
 use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class CMWServiceProvider extends PackageServiceProvider
 {
